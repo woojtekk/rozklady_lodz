@@ -4,6 +4,6 @@
   "country": "PL",
   "content_in_root": false,
   "render_readme": true,
-  // "zip_release": true,
-  // "filename": "rozkladylodz.zip"
+  "zip_release": true,
+  "filename": "rozkladylodz.zip"
 }
