@@ -4,6 +4,6 @@
   "country": "PL",
   "content_in_root": false,
   "render_readme": true,
-  "zip_release": false,
-  "filename": "rozklady_lodz-v.2.0.1"
+  "zip_release": true,
+  "filename": "rozklady_lodz.zip "
 }
