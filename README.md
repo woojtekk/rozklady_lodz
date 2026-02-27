@@ -46,5 +46,6 @@ Keeping `zip_release` set to `true` means HACS will prefer the packaged archive,
 - `hacs.json` governs how HACS interprets the repository.
 - `info.md` (next to this README) is what HACS renders in its details panel.
 - `.gitignore` excludes caches/virtual-env artefacts to keep releases clean.
+- `.github/workflows/release.yml` auto-publishes releases (version bump + zip upload) on push to `main`/`master` or manual workflow run.
 
 Issues and pull requests are welcome in the GitHub repository.

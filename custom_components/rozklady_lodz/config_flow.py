@@ -51,7 +51,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(config_entry):
         return OptionsFlowHandler(config_entry)
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
+class OptionsFlowHandler(config_entries.OptionsFlowWithReload):
     def __init__(self, entry):
         self.config_entry = entry
 
@@ -65,7 +65,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         options_schema = vol.Schema(
             {
-                vol.Optional(CONF_LINES, default=self.config_entry.data.get(CONF_LINES, "")): str,
+                vol.Optional(
+                    CONF_LINES,
+                    default=self.config_entry.options.get(
+                        CONF_LINES, self.config_entry.data.get(CONF_LINES, "")
+                    ),
+                ): str,
                 vol.Optional(CONF_SCAN_INTERVAL, default=self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)): selector.NumberSelector(number_cfg),
                 vol.Optional(CONF_ONLY_TRAMS, default=self.config_entry.options.get(CONF_ONLY_TRAMS, DEFAULT_ONLY_TRAMS)): bool,
             }
