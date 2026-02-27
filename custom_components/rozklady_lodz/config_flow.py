@@ -7,7 +7,8 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import (
     DOMAIN, CONF_STOP_NUMBER, CONF_LINES, CONF_NAME, CONF_SCAN_INTERVAL, CONF_ONLY_TRAMS,
-    DEFAULT_NAME, DEFAULT_SCAN_INTERVAL, DEFAULT_ONLY_TRAMS, API_URL,
+    CONF_TRACKED_ENTITIES, DEFAULT_NAME, DEFAULT_SCAN_INTERVAL, DEFAULT_ONLY_TRAMS,
+    DEFAULT_TRACKED_ENTITIES, API_URL,
 )
 from .api import RozkladyAPI
 
@@ -18,6 +19,9 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         ),
         vol.Required(CONF_LINES): str,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): str,
+        vol.Optional(CONF_TRACKED_ENTITIES, default=DEFAULT_TRACKED_ENTITIES): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain=["device_tracker", "person"], multiple=True)
+        ),
     }
 )
 
@@ -27,6 +31,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         errors: dict[str, str] = {}
         if user_input is not None:
+            tracked = user_input.get(CONF_TRACKED_ENTITIES, DEFAULT_TRACKED_ENTITIES)
+            if isinstance(tracked, str):
+                tracked = [tracked]
+            user_input[CONF_TRACKED_ENTITIES] = [entity for entity in tracked if entity]
             try:
                 user_input[CONF_STOP_NUMBER] = int(user_input[CONF_STOP_NUMBER])
             except Exception:
@@ -57,6 +65,10 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithReload):
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         if user_input is not None:
+            tracked = user_input.get(CONF_TRACKED_ENTITIES, DEFAULT_TRACKED_ENTITIES)
+            if isinstance(tracked, str):
+                tracked = [tracked]
+            user_input[CONF_TRACKED_ENTITIES] = [entity for entity in tracked if entity]
             return self.async_create_entry(title="", data=user_input)
 
         number_cfg = selector.NumberSelectorConfig(
@@ -73,6 +85,15 @@ class OptionsFlowHandler(config_entries.OptionsFlowWithReload):
                 ): str,
                 vol.Optional(CONF_SCAN_INTERVAL, default=self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)): selector.NumberSelector(number_cfg),
                 vol.Optional(CONF_ONLY_TRAMS, default=self.config_entry.options.get(CONF_ONLY_TRAMS, DEFAULT_ONLY_TRAMS)): bool,
+                vol.Optional(
+                    CONF_TRACKED_ENTITIES,
+                    default=self.config_entry.options.get(
+                        CONF_TRACKED_ENTITIES,
+                        self.config_entry.data.get(CONF_TRACKED_ENTITIES, DEFAULT_TRACKED_ENTITIES),
+                    ),
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=["device_tracker", "person"], multiple=True)
+                ),
             }
         )
         return self.async_show_form(step_id="init", data_schema=options_schema)

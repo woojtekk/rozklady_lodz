@@ -16,9 +16,11 @@ from .const import (
     CONF_ONLY_TRAMS,
     CONF_SCAN_INTERVAL,
     CONF_STOP_NUMBER,
+    CONF_TRACKED_ENTITIES,
     DEFAULT_NAME,
     DEFAULT_ONLY_TRAMS,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TRACKED_ENTITIES,
     DOMAIN,
 )
 from .coordinator import RozkladyCoordinator
@@ -34,8 +36,11 @@ async def async_setup_entry(
 
     scan = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     only_trams = entry.options.get(CONF_ONLY_TRAMS, DEFAULT_ONLY_TRAMS)
+    tracked_entities = entry.options.get(
+        CONF_TRACKED_ENTITIES, entry.data.get(CONF_TRACKED_ENTITIES, DEFAULT_TRACKED_ENTITIES)
+    )
 
-    coordinator = RozkladyCoordinator(hass, stop_number, scan, only_trams)
+    coordinator = RozkladyCoordinator(hass, stop_number, scan, only_trams, tracked_entities)
     await coordinator.async_config_entry_first_refresh()
 
     entities: list[SensorEntity] = [
@@ -92,6 +97,9 @@ class DepartureSensor(CoordinatorEntity[RozkladyCoordinator], SensorEntity):
 
         return {
             "stop_name": data.get("stop_name"),
+            "active_stop_number": data.get("active_stop_number"),
+            "location_source": data.get("location_source"),
+            "distance_m": data.get("distance_m"),
             "direction": departures.get("dir"),
             "minutes_list": minutes_list,
             "pretty_list": pretty_list,

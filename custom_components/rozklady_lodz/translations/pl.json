@@ -7,7 +7,8 @@
         "data": {
           "stop_number": "Numer przystanku (busStopNum)",
           "lines": "Numery linii (oddzielone przecinkami)",
-          "name": "Prefiks nazwy encji"
+          "name": "Prefiks nazwy encji",
+          "tracked_entities": "Śledzone urządzenia/osoby (opcjonalnie)"
         }
       }
     },
@@ -25,7 +26,8 @@
         "data": {
           "lines": "Numery linii (oddzielone przecinkami)",
           "scan_interval": "Częstotliwość odświeżania (sekundy, 30-600, krok 30)",
-          "only_trams": "Tylko tramwaje (vt='T')"
+          "only_trams": "Tylko tramwaje (vt='T')",
+          "tracked_entities": "Śledzone urządzenia/osoby (opcjonalnie)"
         }
       }
     }

@@ -7,7 +7,8 @@
         "data": {
           "stop_number": "Stop number (busStopNum)",
           "lines": "Line numbers (comma separated)",
-          "name": "Entity name prefix"
+          "name": "Entity name prefix",
+          "tracked_entities": "Tracked devices/persons (optional)"
         }
       }
     },
@@ -25,7 +26,8 @@
         "data": {
           "lines": "Line numbers (comma separated)",
           "scan_interval": "Refresh interval (seconds, 30-600, step 30)",
-          "only_trams": "Trams only (vt='T')"
+          "only_trams": "Trams only (vt='T')",
+          "tracked_entities": "Tracked devices/persons (optional)"
         }
       }
     }

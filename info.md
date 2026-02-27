@@ -5,6 +5,7 @@ Realtime departures for Łódź directly in Home Assistant. Each configured line
 ### Highlights
 - Config flow that validates the stop number against rozklady.lodz.pl.
 - Tram-only mode plus configurable poll interval (30–600 s).
+- Optional nearest-stop mode based on tracked `device_tracker` / `person` entities.
 - English and Polish translations.
 
 ### Installation
