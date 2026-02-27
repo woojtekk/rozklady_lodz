@@ -31,7 +31,7 @@ async def async_setup_entry(
 ) -> None:
     stop_number = int(entry.data[CONF_STOP_NUMBER])
     lines_config = entry.options.get(CONF_LINES, entry.data[CONF_LINES])
-    lines = [line.strip() for line in str(lines_config).split(",") if line.strip()]
+    lines = [line.strip().upper() for line in str(lines_config).split(",") if line.strip()]
     name_prefix = entry.data.get(CONF_NAME) or DEFAULT_NAME
 
     scan = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)

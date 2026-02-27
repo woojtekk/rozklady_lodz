@@ -6,7 +6,7 @@
         "description": "Configure stop and lines. Data is fetched from rozklady.lodz.pl.",
         "data": {
           "stop_number": "Stop number (busStopNum)",
-          "lines": "Line numbers (comma separated)",
+          "lines": "Line numbers (comma separated, e.g. 58A, 58B)",
           "name": "Entity name prefix",
           "tracked_entities": "Tracked devices/persons (optional)"
         }
@@ -24,7 +24,7 @@
       "init": {
         "title": "Options",
         "data": {
-          "lines": "Line numbers (comma separated)",
+          "lines": "Line numbers (comma separated, e.g. 58A, 58B)",
           "scan_interval": "Refresh interval (seconds, 30-600, step 30)",
           "only_trams": "Trams only (vt='T')",
           "tracked_entities": "Tracked devices/persons (optional)"

@@ -27,7 +27,7 @@ Custom Home Assistant integration that exposes realtime departure data from [roz
 
 ## Configuration
 1. Settings → Devices & Services → **Add Integration** → search for *Rozklady Lodz*.
-2. Enter the stop number (`busStopNum` from rozklady.lodz.pl), comma-separated line numbers, and optionally change the entity name prefix.
+2. Enter the stop number (`busStopNum` from rozklady.lodz.pl), comma-separated line numbers (letters allowed, e.g. `58A`, `58B`), and optionally change the entity name prefix.
 3. After setup you can open the integration options to:
    - Update the set of tracked line numbers.
    - Change the refresh interval (30–600 seconds).

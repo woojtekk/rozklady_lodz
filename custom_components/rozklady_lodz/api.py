@@ -107,7 +107,7 @@ class RozkladyAPI:
             if only_trams and vehicle_type and vehicle_type != "T":
                 continue
 
-            line = (route.attrib.get("nr") or "").strip()
+            line = (route.attrib.get("nr") or "").strip().upper()
             direction = (route.attrib.get("dir") or "").strip()
 
             items = []

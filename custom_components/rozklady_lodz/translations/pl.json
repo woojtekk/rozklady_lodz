@@ -6,7 +6,7 @@
         "description": "Skonfiguruj przystanek i linie. Dane pobierane są z rozklady.lodz.pl.",
         "data": {
           "stop_number": "Numer przystanku (busStopNum)",
-          "lines": "Numery linii (oddzielone przecinkami)",
+          "lines": "Numery linii (np. 58A, 58B; oddzielone przecinkami)",
           "name": "Prefiks nazwy encji",
           "tracked_entities": "Śledzone urządzenia/osoby (opcjonalnie)"
         }
@@ -24,7 +24,7 @@
       "init": {
         "title": "Opcje Rozkłady Łódź",
         "data": {
-          "lines": "Numery linii (oddzielone przecinkami)",
+          "lines": "Numery linii (np. 58A, 58B; oddzielone przecinkami)",
           "scan_interval": "Częstotliwość odświeżania (sekundy, 30-600, krok 30)",
           "only_trams": "Tylko tramwaje (vt='T')",
           "tracked_entities": "Śledzone urządzenia/osoby (opcjonalnie)"
