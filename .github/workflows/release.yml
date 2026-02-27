@@ -53,7 +53,8 @@ jobs:
       - name: Create release package
         run: |
           rm -f rozkladylodz.zip
-          zip -r rozkladylodz.zip custom_components/rozklady_lodz
+          cd custom_components/rozklady_lodz
+          zip -r ../../rozkladylodz.zip .
 
       - name: Create git tag
         run: |
