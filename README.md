@@ -6,7 +6,6 @@ Custom Home Assistant integration that exposes realtime departure data from [roz
 - Config flow with validation against the live API
 - Separate sensors per line with minute estimates, pretty-formatted schedules, direction reminders, and stop metadata
 - Options flow for refresh interval, tracked lines, and tram-only filtering
-- Optional tracking of `device_tracker`/`person` entities to automatically pick the nearest stop
 - Localised strings in English and Polish
 
 ## Requirements

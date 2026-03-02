@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from datetime import datetime, timezone
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
@@ -16,11 +17,9 @@ from .const import (
     CONF_ONLY_TRAMS,
     CONF_SCAN_INTERVAL,
     CONF_STOP_NUMBER,
-    CONF_TRACKED_ENTITIES,
     DEFAULT_NAME,
     DEFAULT_ONLY_TRAMS,
     DEFAULT_SCAN_INTERVAL,
-    DEFAULT_TRACKED_ENTITIES,
     DOMAIN,
 )
 from .coordinator import RozkladyCoordinator
@@ -36,11 +35,7 @@ async def async_setup_entry(
 
     scan = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     only_trams = entry.options.get(CONF_ONLY_TRAMS, DEFAULT_ONLY_TRAMS)
-    tracked_entities = entry.options.get(
-        CONF_TRACKED_ENTITIES, entry.data.get(CONF_TRACKED_ENTITIES, DEFAULT_TRACKED_ENTITIES)
-    )
-
-    coordinator = RozkladyCoordinator(hass, stop_number, scan, only_trams, tracked_entities)
+    coordinator = RozkladyCoordinator(hass, stop_number, scan, only_trams)
     await coordinator.async_config_entry_first_refresh()
 
     entities: list[SensorEntity] = [
@@ -77,31 +72,51 @@ class DepartureSensor(CoordinatorEntity[RozkladyCoordinator], SensorEntity):
     @property
     def native_value(self) -> int | None:
         data = self.coordinator.data or {}
+        is_stale = bool(data.get("stale"))
+        elapsed_minutes = 0
+        if is_stale and self.coordinator.last_success_utc is not None:
+            elapsed_s = (datetime.now(timezone.utc) - self.coordinator.last_success_utc).total_seconds()
+            elapsed_minutes = int(elapsed_s // 60)
         departures = (data.get("departures") or {}).get(self._line)
         if not departures:
             return None
         for item in departures["items"]:
             minutes = item.get("minutes")
             if minutes is not None:
-                return int(minutes)
+                remaining = int(minutes) - elapsed_minutes
+                if remaining < 0:
+                    return None
+                return max(0, remaining)
         return None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         data = self.coordinator.data or {}
+        is_stale = bool(data.get("stale"))
+        elapsed_minutes = 0
+        if is_stale and self.coordinator.last_success_utc is not None:
+            elapsed_s = (datetime.now(timezone.utc) - self.coordinator.last_success_utc).total_seconds()
+            elapsed_minutes = int(elapsed_s // 60)
         departures = (data.get("departures") or {}).get(self._line) or {}
 
         items = departures.get("items") or []
-        minutes_list = [int(item["minutes"]) for item in items if item["minutes"] is not None]
+        minutes_list: list[int] = []
+        for item in items:
+            minutes = item.get("minutes")
+            if minutes is None:
+                continue
+            remaining = int(minutes) - elapsed_minutes
+            if remaining < 0:
+                continue
+            minutes_list.append(max(0, remaining))
         pretty_list = [item["pretty"] for item in items]
 
         return {
             "stop_name": data.get("stop_name"),
-            "active_stop_number": data.get("active_stop_number"),
-            "location_source": data.get("location_source"),
-            "distance_m": data.get("distance_m"),
             "direction": departures.get("dir"),
             "minutes_list": minutes_list,
             "pretty_list": pretty_list,
             "line": self._line,
+            "stale": is_stale,
+            "stale_age_s": data.get("stale_age_s"),
         }

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from typing import Any, Dict
-from urllib.parse import urljoin
 from xml.etree import ElementTree as ET
 
 from aiohttp import ClientSession, ClientTimeout
@@ -50,46 +49,6 @@ class RozkladyAPI:
         ) as response:
             response.raise_for_status()
             return await response.read()
-
-    async def fetch_stops(self, stops_url: str, tt_id: int = 0, timeout: float = 20.0) -> list[dict[str, Any]]:
-        params = {"ttId": str(tt_id), "s": ""}
-        headers = {"User-Agent": "HomeAssistant/rozklady_lodz (https://www.home-assistant.io/)"}
-        timeout_cfg = ClientTimeout(total=timeout)
-        url = urljoin(self._base, stops_url)
-        async with self._session.get(
-            url, params=params, headers=headers, timeout=timeout_cfg
-        ) as response:
-            response.raise_for_status()
-            payload = await response.json(content_type=None)
-
-        stops: list[dict[str, Any]] = []
-        if not isinstance(payload, list):
-            return stops
-
-        for row in payload:
-            if not isinstance(row, list) or len(row) < 5:
-                continue
-            stop_number = _to_int(str(row[2]) if row[2] is not None else None)
-            if stop_number is None:
-                continue
-
-            try:
-                latitude = float(row[3])
-                longitude = float(row[4])
-            except (TypeError, ValueError):
-                continue
-
-            stop_name = str(row[1]).strip() if row[1] is not None else ""
-            stops.append(
-                {
-                    "stop_number": stop_number,
-                    "stop_name": stop_name,
-                    "latitude": latitude,
-                    "longitude": longitude,
-                }
-            )
-
-        return stops
 
     def parse(self, xml_bytes: bytes, only_trams: bool = True) -> Dict[str, Any]:
         root = ET.fromstring(xml_bytes)
