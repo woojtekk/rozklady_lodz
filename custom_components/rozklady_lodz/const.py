@@ -11,7 +11,7 @@ CONF_TRACKED_ENTITIES = "tracked_entities"
 # Default prefix that appears in entity names
 DEFAULT_NAME = "Rozklady Lodz"
 DEFAULT_SCAN_INTERVAL = 30  # seconds
-DEFAULT_ONLY_TRAMS = True
+DEFAULT_ONLY_TRAMS = False
 DEFAULT_TRACKED_ENTITIES: list[str] = []
 
 API_URL = "http://rozklady.lodz.pl/Home/GetTimetableReal"

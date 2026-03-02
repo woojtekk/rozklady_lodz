@@ -48,7 +48,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 session = async_get_clientsession(self.hass)
                 api = RozkladyAPI(session, API_URL)
                 xml = await api.fetch_xml(int(user_input[CONF_STOP_NUMBER]))
-                _ = api.parse(xml, only_trams=True)
+                _ = api.parse(xml, only_trams=DEFAULT_ONLY_TRAMS)
                 return self.async_create_entry(title=f"Przystanek {user_input[CONF_STOP_NUMBER]}", data=user_input)
             except Exception:
                 errors["base"] = "cannot_connect"
