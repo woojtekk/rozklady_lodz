@@ -1,5 +1,5 @@
 DOMAIN = "rozklady_lodz"
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "button"]
 
 CONF_STOP_NUMBER = "stop_number"
 CONF_LINES = "lines"

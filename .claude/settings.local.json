@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\woojtekk\\\\Documents\\\\PlatformIO\\\\Projects\\\\rozklady_lodz\" -Force | Select-Object Name, @{Name=\"Type\"; Expression={if\\($_.PSIsContainer\\) {\"Directory\"} else {\"File\"}}}, @{Name=\"Size\"; Expression={if\\($_.PSIsContainer\\) {\"-\"} else {\"{0:N0} bytes\" -f $_.Length}}} | Format-Table -AutoSize)",
+      "PowerShell(tree \"c:\\\\Users\\\\woojtekk\\\\Documents\\\\PlatformIO\\\\Projects\\\\rozklady_lodz\" -L 3 2>$null)",
+      "PowerShell(head -100)"
+    ]
+  }
+}

@@ -1,25 +1,22 @@
 from __future__ import annotations
 
 from typing import Any
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 
 from .const import (
     CONF_LINES,
     CONF_NAME,
-    CONF_ONLY_TRAMS,
-    CONF_SCAN_INTERVAL,
     CONF_STOP_NUMBER,
     DEFAULT_NAME,
-    DEFAULT_ONLY_TRAMS,
-    DEFAULT_SCAN_INTERVAL,
     DOMAIN,
 )
 from .coordinator import RozkladyCoordinator
@@ -28,19 +25,15 @@ from .coordinator import RozkladyCoordinator
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    stop_number = int(entry.data[CONF_STOP_NUMBER])
+    coordinator: RozkladyCoordinator = hass.data[DOMAIN][entry.entry_id]
     lines_config = entry.options.get(CONF_LINES, entry.data[CONF_LINES])
     lines = [line.strip().upper() for line in str(lines_config).split(",") if line.strip()]
     name_prefix = entry.data.get(CONF_NAME) or DEFAULT_NAME
 
-    scan = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-    only_trams = entry.options.get(CONF_ONLY_TRAMS, DEFAULT_ONLY_TRAMS)
-    coordinator = RozkladyCoordinator(hass, stop_number, scan, only_trams)
-    await coordinator.async_config_entry_first_refresh()
-
     entities: list[SensorEntity] = [
         DepartureSensor(coordinator, entry, line, name_prefix) for line in lines
     ]
+    entities.append(LastUpdateSensor(coordinator, entry, name_prefix))
     async_add_entities(entities)
 
 
@@ -120,3 +113,49 @@ class DepartureSensor(CoordinatorEntity[RozkladyCoordinator], SensorEntity):
             "stale": is_stale,
             "stale_age_s": data.get("stale_age_s"),
         }
+
+
+class LastUpdateSensor(SensorEntity):
+    _attr_icon = "mdi:clock-outline"
+    _attr_native_unit_of_measurement = "s"
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self, coordinator: RozkladyCoordinator, entry: ConfigEntry, name_prefix: str
+    ) -> None:
+        self._coordinator = coordinator
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_last_update_age"
+        self._attr_name = f"{name_prefix} ostatnia aktualizacja"
+        self._unsub = None
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        stop = self._entry.data.get(CONF_STOP_NUMBER)
+        return DeviceInfo(
+            identifiers={(DOMAIN, f"stop_{stop}")},
+            name=f"Rozklady Lodz ({stop})",
+            manufacturer="rozklady.lodz.pl",
+            model="Realtime departures",
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        if self._coordinator.last_success_utc is None:
+            return None
+        elapsed = (datetime.now(timezone.utc) - self._coordinator.last_success_utc).total_seconds()
+        return int(elapsed)
+
+    async def async_added_to_hass(self) -> None:
+        self._unsub = async_track_time_interval(
+            self.hass, self._tick, timedelta(seconds=1)
+        )
+
+    async def async_will_remove_from_hass(self) -> None:
+        if self._unsub:
+            self._unsub()
+            self._unsub = None
+
+    def _tick(self, _now: datetime) -> None:
+        self.async_write_ha_state()
