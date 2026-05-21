@@ -34,6 +34,7 @@ async def async_setup_entry(
         DepartureSensor(coordinator, entry, line, name_prefix) for line in lines
     ]
     entities.append(LastUpdateSensor(coordinator, entry, name_prefix))
+    entities.append(StatusSensor(coordinator, entry, name_prefix))
     async_add_entities(entities)
 
 
@@ -159,3 +160,40 @@ class LastUpdateSensor(SensorEntity):
 
     def _tick(self, _now: datetime) -> None:
         self.async_write_ha_state()
+
+
+STATUS_REFRESHING = "w trakcie odświeżania"
+STATUS_CURRENT = "aktualny"
+STATUS_STALE = "przedawniony"
+
+
+class StatusSensor(CoordinatorEntity[RozkladyCoordinator], SensorEntity):
+    _attr_icon = "mdi:database-sync-outline"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = [STATUS_REFRESHING, STATUS_CURRENT, STATUS_STALE]
+
+    def __init__(
+        self, coordinator: RozkladyCoordinator, entry: ConfigEntry, name_prefix: str
+    ) -> None:
+        super().__init__(coordinator)
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_status"
+        self._attr_name = f"{name_prefix} status"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        stop = self._entry.data.get(CONF_STOP_NUMBER)
+        return DeviceInfo(
+            identifiers={(DOMAIN, f"stop_{stop}")},
+            name=f"Rozklady Lodz ({stop})",
+            manufacturer="rozklady.lodz.pl",
+            model="Realtime departures",
+        )
+
+    @property
+    def native_value(self) -> str:
+        if self.coordinator.refreshing:
+            return STATUS_REFRESHING
+        if (self.coordinator.data or {}).get("stale"):
+            return STATUS_STALE
+        return STATUS_CURRENT

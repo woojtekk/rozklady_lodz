@@ -30,10 +30,19 @@ class RozkladyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._api = RozkladyAPI(async_get_clientsession(hass), API_URL)
         self._last_success_data: dict[str, Any] | None = None
         self._last_success_utc: datetime | None = None
+        self.refreshing: bool = False
 
     @property
     def last_success_utc(self) -> datetime | None:
         return self._last_success_utc
+
+    async def async_refresh(self) -> None:
+        self.refreshing = True
+        self.async_update_listeners()
+        try:
+            await super().async_refresh()
+        finally:
+            self.refreshing = False
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
